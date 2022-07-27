@@ -14,9 +14,9 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.function.Consumer;
 
-public class HotReloadServiceV1 implements Consumer<FileChangeEvent> {
+public class LiveReloadService implements Consumer<FileChangeEvent> {
 
-    private final static Logger LOGGER = Logger.getLogger(HotReloadServiceV1.class);
+    private final static Logger LOGGER = Logger.getLogger(LiveReloadService.class);
     
     private ObserverKey observerKey;
     private CompilerRunner compilerRunner;
@@ -25,7 +25,7 @@ public class HotReloadServiceV1 implements Consumer<FileChangeEvent> {
     
     private final ApplicationRunner runner;
 
-    public HotReloadServiceV1(Project project, ApplicationRunner runner) {
+    public LiveReloadService(Project project, ApplicationRunner runner) {
 
         try {            
          

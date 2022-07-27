@@ -29,7 +29,7 @@ public class ClasspathLoader {
             DynamicClassLoader dynamicClassLoader = new DynamicClassLoader(mainClassLoader, path);
             mainThread.setContextClassLoader(dynamicClassLoader);
 
-            Class<?> applicationClass = dynamicClassLoader.load(Application.class.getName());
+            Class<?> applicationClass = dynamicClassLoader.load(LiveApplication.class.getName());
 
             StackTraceElement[] stackTrace = mainThread.getStackTrace();
             for (int i = stackTrace.length - 1; i >= 0; i--) {

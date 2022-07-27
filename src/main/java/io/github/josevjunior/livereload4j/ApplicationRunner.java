@@ -36,7 +36,7 @@ public class ApplicationRunner {
                 throw new ReflectiveOperationException(mainClass.getName() + ".main(String[]) is not static");
             }
 
-            Class<?> applicationClass = Application.class;
+            Class<?> applicationClass = LiveApplication.class;
             Class<?> applicationSubClass = null;
             
             for (int i = stackTrace.length - 1; i >= 0; i--) {
