@@ -24,7 +24,12 @@ public class ProjectTest {
         Assume.assumeNotNull(System.getProperty("user.dir"));
         
         Project project = Project.determineProject();
-        Assert.assertEquals(Paths.get(System.getProperty("user.dir"), "src/main/resources"), project.getResourcePath().toAbsolutePath());
+        if(project.isUseResourcePath()) {
+            Assert.assertEquals(Paths.get(System.getProperty("user.dir"), "src/main/resources"), project.getResourcePath().toAbsolutePath());
+        } else {
+            Assert.assertNull(project.getResourcePath());
+        }
+        
     }
     
 }
