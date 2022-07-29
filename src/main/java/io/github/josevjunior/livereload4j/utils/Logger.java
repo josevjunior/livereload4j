@@ -1,26 +1,63 @@
 
 package io.github.josevjunior.livereload4j.utils;
 
+import io.github.josevjunior.livereload4j.ConfProvider;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
+import java.util.logging.SimpleFormatter;
+import java.util.regex.Pattern;
 
 public class Logger {
     
     private final java.util.logging.Logger logger;
+    private final String type;
+    private final boolean enabled;
     
-    private Logger(Class<?> clazz) {
-        logger = java.util.logging.Logger.getLogger(clazz.getName());
+    private static final Pattern pattern;
+    
+    static {
+        String regex = ConfProvider.getEnabledLogRegex();
+        if(regex != null) {
+            pattern = Pattern.compile(regex);
+        } else {
+            pattern = null;
+        }
     }
     
-    public static Logger getLogger(Class<?> clazz) {
-        return new Logger(clazz);
+    private Logger(Class<?> clazz, String type) {
+        this.type = type;
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setLevel(Level.FINE);
+        handler.setFormatter(new SimpleFormatter());        
+        
+        logger = java.util.logging.Logger.getLogger(clazz.getName());
+        logger.addHandler(handler);
+        logger.setUseParentHandlers(false);
+        logger.setLevel(Level.FINE);
+                
+        enabled = pattern != null && pattern.matcher(type).find();
+    }
+    
+    public static Logger getLogger(Class<?> clazz, String type) {
+        return new Logger(clazz, type);
     }
     
     public void debug(String msg) {
-        logger.log(Level.CONFIG, msg);
+        
+        if(!enabled) {
+            return;
+        }
+        
+        logger.log(Level.FINE, "[" + type + "] " + msg);
     }
     
     public void debug(String msg, Throwable throwable) {
-        logger.log(Level.CONFIG, msg, throwable);
+        
+        if(!enabled) {
+            return;
+        }
+        
+        logger.log(Level.FINE, "[" + type + "]" + msg, throwable);
     }
     
 }

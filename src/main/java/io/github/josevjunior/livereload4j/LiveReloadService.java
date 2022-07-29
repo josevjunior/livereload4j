@@ -13,16 +13,17 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 public class LiveReloadService implements Consumer<FileChangeEvent> {
 
-    private final static Logger LOGGER = Logger.getLogger(LiveReloadService.class);
+    private final static Logger LOGGER = Logger.getLogger(LiveReloadService.class, LoggerType.FOLDERWATCHER);
     
     private ObserverKey observerKey;
-    private CompilerRunner compilerRunner;
+    private final CompilerRunner compilerRunner;
     private final Project project;
-    private TickWaiter tickWaiter;
-    
+    private final TickWaiter tickWaiter;
+    private final Pattern ignorePattern;
     private final ApplicationRunner runner;
 
     public LiveReloadService(Project project, ApplicationRunner runner) {
@@ -49,6 +50,8 @@ public class LiveReloadService implements Consumer<FileChangeEvent> {
                     LOGGER.debug(ex.getLocalizedMessage(), ex);
                 }
             });
+            
+            ignorePattern = Pattern.compile(ConfProvider.getFileIgnoreRegex());
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -76,11 +79,23 @@ public class LiveReloadService implements Consumer<FileChangeEvent> {
     public void stop() {
         observerKey.unregister();
     }
+    
+    private boolean shouldIgnore(FileChangeEvent changeEvent) {
+        return ignorePattern.matcher(changeEvent.getPathChanged().toString()).find();
+    }
 
     @Override
     public void accept(FileChangeEvent fileChange) {
 
         try {
+            
+            LOGGER.debug(String.format("Event fired: %s", fileChange.getEventKind()));
+            LOGGER.debug(String.format("File changed: %s", fileChange.getPathChanged()));
+            
+            if(shouldIgnore(fileChange)) {
+                LOGGER.debug("ignored");
+                return;
+            }
             
             Path fileChangedPath = fileChange.getPathChanged().toAbsolutePath();
             
@@ -88,7 +103,7 @@ public class LiveReloadService implements Consumer<FileChangeEvent> {
             Path targetFilePath = null;
             if(project.isUseResourcePath() && targetSubpath.startsWith(project.getResourcePath())){
                 targetFilePath = targetSubpath.subpath(project.getResourcePath().getNameCount(), targetSubpath.getNameCount());                
-            } else {
+            } else {                
                 targetFilePath = targetSubpath.subpath(project.getSourcePath().getNameCount(), targetSubpath.getNameCount());                
             }
             targetFilePath = project.getTempOutputPath().resolve(targetFilePath);
@@ -111,13 +126,13 @@ public class LiveReloadService implements Consumer<FileChangeEvent> {
             
             tickWaiter.notifyOrWait();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.debug(e.getMessage(), e);
         }
     }
 
     private void registerFileWatcher() throws IOException {
-        observerKey = FolderChangeScanner.registerObserver(project.getRootPath(), this);
+        observerKey = FolderChangeScanner.registerObserver(project, this);
     }
 
     private void moveFilesToTempFolder() throws IOException {
@@ -149,7 +164,7 @@ public class LiveReloadService implements Consumer<FileChangeEvent> {
         
         if(project.isUseResourcePath()) {
             
-            Files.walkFileTree(project.getSourcePath(), new SimpleFileVisitorImpl(
+            Files.walkFileTree(project.getResourcePath(), new SimpleFileVisitorImpl(
                 project.getTempOutputPath().toAbsolutePath(), 
                 project.getResourcePath()
             ));

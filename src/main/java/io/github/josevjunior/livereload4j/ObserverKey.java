@@ -21,29 +21,37 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class ObserverKey implements Runnable {
-    
-    private final static Logger LOGGER = Logger.getLogger(ObserverKey.class);
-    
-    private final Path resourcePath;
+
+    private final static Logger LOGGER = Logger.getLogger(ObserverKey.class, LoggerType.FOLDERWATCHER);
+
+    private final Project project;
     private Map<WatchKey, Path> watchKeys = new HashMap<>();
     private WatchService watchService;
     private Consumer<FileChangeEvent> onChange;
     private boolean canceled;
 
-    public ObserverKey(Path resourcePath, Consumer<FileChangeEvent> onChange) {
-        this.resourcePath = resourcePath;
+    public ObserverKey(Project project, Consumer<FileChangeEvent> onChange) {
+        this.project = project;
         this.onChange = onChange;
     }
 
     public void register() throws IOException {
         watchService = FileSystems.getDefault().newWatchService();
-        Files.walkFileTree(resourcePath, new SimpleFileVisitor<Path>() {
+        
+        SimpleFileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
             public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                
                 WatchKey key = dir.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
-                watchKeys.put(key, dir);
+                watchKeys.put(key, dir);                
+
                 return FileVisitResult.CONTINUE;
-            }            
-        });
+            }
+        };
+        
+        Files.walkFileTree(project.getSourcePath().toAbsolutePath(), visitor);
+        if(project.isUseResourcePath()) {
+            Files.walkFileTree(project.getResourcePath().toAbsolutePath(), visitor);
+        }
     }
 
     public void unregister() {
@@ -56,11 +64,11 @@ public class ObserverKey implements Runnable {
     @Override
     public void run() {
         //tickWaiter = new TickWaiter();
-        while(true) {
+        while (true) {
             WatchKey key;
             try {
                 key = watchService.take();
-            } catch (InterruptedException x) {                
+            } catch (InterruptedException x) {
                 return;
             }
 
@@ -75,7 +83,6 @@ public class ObserverKey implements Runnable {
                     continue;
                 }
 
-                
                 if (ev.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                     try {
                         Path parentPath = watchKeys.get(key);
@@ -99,25 +106,25 @@ public class ObserverKey implements Runnable {
                             break;
                         }
                     }
-                    
-                    if(toDelete != null) {
+
+                    if (toDelete != null) {
                         toDelete.cancel();
                         watchKeys.remove(toDelete);
                     }
-                    
+
                 }
 
                 Path filePath = folderPath.resolve(ev.context());
                 onChange.accept(new FileChangeEvent(filePath, kind));
                 //tickWaiter.notifyOrWait();
             }
-            
+
             boolean valid = key.reset();
             if (!valid) {
                 key.cancel();
                 watchKeys.remove(key);
             }
         }
-    }    
+    }
 
 }

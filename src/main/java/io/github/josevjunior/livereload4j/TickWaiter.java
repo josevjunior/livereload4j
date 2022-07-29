@@ -12,7 +12,7 @@ public class TickWaiter {
     private AtomicInteger monitor = new AtomicInteger(-1);
     private long waitUntilAdviceInMillis = 500;
     
-    private final static Logger LOGGER = Logger.getLogger(TickWaiter.class);
+    private final static Logger LOGGER = Logger.getLogger(TickWaiter.class, LoggerType.TICKER);
     
 
     public TickWaiter(Runnable callback) {

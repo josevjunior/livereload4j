@@ -5,6 +5,7 @@ import static java.nio.file.Files.exists;
 import static java.nio.file.Files.isDirectory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 public class Project {
 
@@ -99,5 +100,48 @@ public class Project {
     public String toString() {
         return "Project{" + "sourcePath=" + sourcePath + ", useResourcePath=" + useResourcePath + ", resourcePath=" + resourcePath + ", tempOutputPath=" + tempOutputPath + '}';
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 37 * hash + Objects.hashCode(this.rootPath);
+        hash = 37 * hash + Objects.hashCode(this.sourcePath);
+        hash = 37 * hash + (this.useResourcePath ? 1 : 0);
+        hash = 37 * hash + Objects.hashCode(this.resourcePath);
+        hash = 37 * hash + Objects.hashCode(this.tempOutputPath);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Project other = (Project) obj;
+        if (this.useResourcePath != other.useResourcePath) {
+            return false;
+        }
+        if (!Objects.equals(this.rootPath, other.rootPath)) {
+            return false;
+        }
+        if (!Objects.equals(this.sourcePath, other.sourcePath)) {
+            return false;
+        }
+        if (!Objects.equals(this.resourcePath, other.resourcePath)) {
+            return false;
+        }
+        if (!Objects.equals(this.tempOutputPath, other.tempOutputPath)) {
+            return false;
+        }
+        return true;
+    }
+    
+    
 
 }

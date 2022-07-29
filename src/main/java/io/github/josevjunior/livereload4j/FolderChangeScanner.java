@@ -21,32 +21,34 @@ public class FolderChangeScanner {
         Runtime.getRuntime().addShutdownHook(thread);
     }
 
-    public static ObserverKey registerObserver(Path folderPath, Consumer<FileChangeEvent> onChange) throws IOException {
+    public static ObserverKey registerObserver(Project project, Consumer<FileChangeEvent> onChange) throws IOException {
         
-        if (!Files.isDirectory(folderPath)) {
-            throw new IOException("Path " + folderPath + " does not point to a valid folder");
+        Path rootPath = project.getRootPath();
+        
+        if (!Files.isDirectory(rootPath)) {
+            throw new IOException("Path " + project.getRootPath() + " does not point to a valid folder");
         }
 
-        if (!Files.exists(folderPath)) {
-            throw new FileNotFoundException(folderPath.toString());
+        if (!Files.exists(rootPath)) {
+            throw new FileNotFoundException(project.getRootPath().toString());
         }
         
         if(onChange == null) {
             throw new NullPointerException("onChange must not be null");
         }
 
-        if (keys.containsKey(folderPath.toString())) {
+        if (keys.containsKey(rootPath.toString())) {
             throw new IllegalArgumentException("Path already registered in this runtime");
         }
 
-        ObserverKey observerKey = new ObserverKey(folderPath, onChange);
+        ObserverKey observerKey = new ObserverKey(project, onChange);
         observerKey.register();
 
         Thread thread = new Thread(observerKey);
-        thread.setName("WatchService [folder=" + folderPath + "]");
+        thread.setName("WatchService [folder=" + rootPath + "]");
         thread.start();
 
-        keys.put(folderPath.toString(), observerKey);
+        keys.put(rootPath.toString(), observerKey);
         
         return observerKey;
     }
