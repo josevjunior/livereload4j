@@ -15,4 +15,8 @@ public class ConfProvider {
         return System.getProperty("lr4j.enabled.log.regex");
     }
     
+    public static String getFileEncode() {
+        return System.getProperty("lr4j.file.encode", "UTF-8");
+    }
+    
 }

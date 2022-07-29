@@ -10,29 +10,62 @@ public class CompilerRunner {
 
     private final Path sourcePath;
     private final Path javacPath;
-    private final String classPath;
+    private String classPath;
     private final Path mainClass;
+    private String enconding;
 
-    public CompilerRunner(Path javacPath, Path sourcePath, String classPath, Path mainClass) {
+    public CompilerRunner(Path javacPath, Path sourcePath, Path mainClass) {
         this.sourcePath = sourcePath;
         this.javacPath = javacPath;
-        this.classPath = classPath;
         this.mainClass = mainClass;
     }
 
+    public void setEnconding(String enconding) {
+        this.enconding = enconding;
+    }
+
+    public String getEnconding() {
+        return enconding;
+    }
+
+    public void setClassPath(String classPath) {
+        this.classPath = classPath;
+    }
+
+    public String getClassPath() {
+        return classPath;
+    }
+
+    public Path getSourcePath() {
+        return sourcePath;
+    }
+
+    public Path getJavacPath() {
+        return javacPath;
+    }
+
+    public Path getMainClass() {
+        return mainClass;
+    }
+
     public void run() throws IOException, InterruptedException {
-        
+
         List<String> commands = new ArrayList<>();
         commands.add(javacPath.toString());
         commands.add("-g");
         commands.add("-sourcepath");
         commands.add(sourcePath.toString());
-        if(classPath != null) {
+        if (enconding != null) {
+            commands.add("-encoding");
+            commands.add(enconding);
+        }
+
+        if (classPath != null) {
             commands.add("-cp");
             commands.add(classPath);
-        }        
+        }
         commands.add(mainClass.toString());
-        
+
         ProcessBuilder pb = new ProcessBuilder(commands);
         Process process = pb.start();
         int result = process.waitFor();
@@ -47,9 +80,9 @@ public class CompilerRunner {
             } finally {
                 scanner.close();
             }
-            
+
             throw new IOException(msg.toString());
-            
+
         }
     }
 

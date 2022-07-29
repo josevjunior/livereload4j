@@ -39,9 +39,10 @@ public class LiveReloadService implements Consumer<FileChangeEvent> {
             compilerRunner = new CompilerRunner(
                     javacPath, 
                     project.getTempOutputPath(),
-                    StringUtils.getEmptyAsNull(System.getProperty("java.class.path")),
                     mainClassPath
             );
+            compilerRunner.setClassPath(StringUtils.getEmptyAsNull(System.getProperty("java.class.path")));
+            compilerRunner.setEnconding(StringUtils.getEmptyAsNull(ConfProvider.getFileEncode()));
             
             tickWaiter = new TickWaiter(() -> {
                 try {
@@ -68,7 +69,7 @@ public class LiveReloadService implements Consumer<FileChangeEvent> {
     }
     
     private void compileClassesAndRun() throws Exception {
-        compilerRunner.run();        
+        compilerRunner.run();
         runner.run();
     }
     

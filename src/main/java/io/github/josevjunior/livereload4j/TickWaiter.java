@@ -35,7 +35,13 @@ public class TickWaiter {
                         }
                     }
                     
-                    callback.run();
+                    
+                    try {
+                        callback.run();
+                    }catch (Throwable e) {
+                        LOGGER.debug(e.getMessage(), e);
+                    }                    
+                    
                     monitor.set(monitor.get() == WILLNOTIFY_FLAG ? SLEEP_FLAG : WAIT_FLAG);
                 } while (true);
             } catch (InterruptedException e) {
