@@ -5,6 +5,7 @@
     <artifactId>livereload4j</artifactId>
     <version>1.0.0.Beta1</version>
     <packaging>jar</packaging>
+    <url>https://github.com/josevjunior/livereload4j</url>
     
     <name>Live Reload For Java</name>
     <description>Live Reload For Standalone Java Projects</description>
