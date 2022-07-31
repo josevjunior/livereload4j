@@ -2,6 +2,7 @@ package io.github.josevjunior.livereload4j;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URLClassLoader;
 
 public class ApplicationRunner {
 
@@ -51,7 +52,7 @@ public class ApplicationRunner {
             }
             
             if(applicationSubClass == null) {
-                throw new ReflectiveOperationException("Could not find a valid Application subclass");
+                throw new ReflectiveOperationException("Could not determine a valid LiveApplication subclass");
             }
             
             applicationClassName = applicationSubClass.getName();
@@ -71,6 +72,7 @@ public class ApplicationRunner {
         }
         
         DynamicClassLoader classLoader = new DynamicClassLoader(runnerClassLoader, project.getTempOutputPath().toString());
+        Thread.currentThread().setContextClassLoader(classLoader);
         Class<?> loadedClass = classLoader.loadClass(applicationClassName);
         lastApplicationObject = loadedClass.newInstance();
         executeStartMethod(lastApplicationObject, appArgs);

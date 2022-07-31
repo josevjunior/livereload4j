@@ -11,7 +11,7 @@ public class FileUtils {
         try {
             return Files.readAllBytes(file.toPath());
         }catch (IOException e) {
-            throw  new RuntimeException(e);
+            throw new RuntimeException(e);
         }        
     }
     

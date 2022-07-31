@@ -4,6 +4,7 @@ import io.github.josevjunior.livereload4j.utils.Logger;
 import io.github.josevjunior.livereload4j.utils.PathUtils;
 import io.github.josevjunior.livereload4j.utils.StringUtils;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -37,12 +38,12 @@ public class LiveReloadService implements Consumer<FileChangeEvent> {
             Path mainClassPath = getMainClassPath();
             
             compilerRunner = new CompilerRunner(
-                    javacPath, 
-                    project.getTempOutputPath(),
+                    project,
+                    javacPath,
                     mainClassPath
             );
             compilerRunner.setClassPath(StringUtils.getEmptyAsNull(System.getProperty("java.class.path")));
-            compilerRunner.setEnconding(StringUtils.getEmptyAsNull(ConfProvider.getFileEncode()));
+            compilerRunner.setEncoding(StringUtils.getEmptyAsNull(ConfProvider.getFileEncode()));
             
             tickWaiter = new TickWaiter(() -> {
                 try {
@@ -70,7 +71,16 @@ public class LiveReloadService implements Consumer<FileChangeEvent> {
     
     private void compileClassesAndRun() throws Exception {
         compilerRunner.run();
-        runner.run();
+        try {
+            runner.run();
+        }catch (Throwable e) {
+            LOGGER.debug(e.getLocalizedMessage(), e);
+            if(e instanceof InvocationTargetException) {
+                e.getCause().printStackTrace();
+            } else {
+                e.printStackTrace();
+            }
+        }
     }
     
     private Path getMainClassPath() {

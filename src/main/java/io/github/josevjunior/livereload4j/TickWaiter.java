@@ -34,13 +34,8 @@ public class TickWaiter {
                             LOGGER.debug("Esperei");
                         }
                     }
-                    
-                    
-                    try {
-                        callback.run();
-                    }catch (Throwable e) {
-                        LOGGER.debug(e.getMessage(), e);
-                    }                    
+                                                            
+                    callback.run();            
                     
                     monitor.set(monitor.get() == WILLNOTIFY_FLAG ? SLEEP_FLAG : WAIT_FLAG);
                 } while (true);
