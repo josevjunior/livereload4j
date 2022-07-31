@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.josevjunior</groupId>
     <artifactId>livereload4j</artifactId>
-    <version>1.0.0-Beta1</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     
     <name>Live Reload For Java</name>
